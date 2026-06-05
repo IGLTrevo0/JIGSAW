@@ -19,10 +19,10 @@
     let dragSource   = null;        // { from: 'tray'|'board', val: Number, dzIndex?: Number }
 
     // ── Constants ──
-    const GRID = 10;
-    const TOTAL = GRID * GRID;      // 100
+    const GRID = 7;
+    const TOTAL = GRID * GRID;      // 49
     const TRAY_PIECE_SIZE = 80;     // px
-    const TRAY_BG_FULL   = 800;    // 80 / tileSize * tileSize * 10 simplifies to 800 always
+    const TRAY_BG_FULL   = 560;    // 80 / tileSize * tileSize * 7 simplifies to 560 always
 
     // ──────────────────────────────────────────────
     //  Fisher-Yates Shuffle (unbiased)
@@ -36,7 +36,7 @@
     }
 
     // ──────────────────────────────────────────────
-    //  Board initialisation — 100 invisible drop zones
+    //  Board initialisation — 49 invisible drop zones
     // ──────────────────────────────────────────────
     function initBoard() {
         boardEl.innerHTML = '';
@@ -230,7 +230,7 @@
             if (placedPieces[i] !== correctVal) return;
         }
 
-        // All 100 match!
+        // All 49 match!
         winMsgEl.classList.remove('hidden');
     }
 

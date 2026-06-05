@@ -84,6 +84,7 @@ body {
 .drop-zone {
     position: absolute;
     /* dimensions set by JS */
+    border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .drop-zone.drag-over {
@@ -161,4 +162,14 @@ body {
 }
 #tray::-webkit-scrollbar-thumb:hover {
     background: #555;
+}
+
+/* ── Mobile responsiveness ── */
+@media (max-width: 600px) {
+    #tray {
+        width: 100px;
+    }
+    .tray-piece {
+        zoom: 0.5;
+    }
 }
