@@ -197,6 +197,10 @@
     //  Handle a piece being dropped onto a drop zone
     // ──────────────────────────────────────────────
     function handleDrop(dropZoneIndex, pieceVal, fromType, fromDzIndex) {
+        if (fromType === 'board' && fromDzIndex === dropZoneIndex) {
+            return;
+        }
+
         const dropZones = boardEl.querySelectorAll('.drop-zone');
         const targetDz = dropZones[dropZoneIndex];
 
@@ -238,16 +242,8 @@
     //  Win detection
     // ──────────────────────────────────────────────
     function checkWin() {
-        if (Object.keys(placedPieces).length < TOTAL) return;
-
-        const dropZones = boardEl.querySelectorAll('.drop-zone');
-
-        for (let i = 0; i < TOTAL; i++) {
-            const correctVal = parseInt(dropZones[i].dataset.correct, 10);
-            if (placedPieces[i] !== correctVal) return;
-        }
-
-        // All 36 match!
+        const allPlaced = Object.keys(placedPieces).length === TOTAL;
+        if (!allPlaced) return;
         playWinAnimation();
     }
 
@@ -255,6 +251,7 @@
     //  Win Animation
     // ──────────────────────────────────────────────
     function playWinAnimation() {
+        console.log("playWinAnimation fired")
         const dropZones = boardEl.querySelectorAll('.drop-zone');
 
         dropZones.forEach(dz => dz.style.border = 'none');
