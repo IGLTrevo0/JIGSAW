@@ -7,24 +7,22 @@
     'use strict';
 
     // ── DOM refs ──
-    const boardEl      = document.getElementById('board');
+    const boardEl = document.getElementById('board');
     const trayPiecesEl = document.getElementById('tray-pieces');
-    const winMsgEl     = document.getElementById('win-msg');
-    const playAgainBtn = document.getElementById('play-again');
 
     // ── State ──
-    let tileSize     = 0;           // px — calculated from board width
-    let trayPieces   = [];          // array of pieceValues currently in tray
+    let tileSize = 0;           // px — calculated from board width
+    let trayPieces = [];          // array of pieceValues currently in tray
     let placedPieces = {};          // { dropZoneIndex: pieceValue }
-    let dragSource   = null;        // { from: 'tray'|'board', val: Number, dzIndex?: Number }
-    let touchClone   = null;        // visual clone for touch dragging
+    let dragSource = null;        // { from: 'tray'|'board', val: Number, dzIndex?: Number }
+    let touchClone = null;        // visual clone for touch dragging
     let currentHoverDz = null;      // currently hovered drop zone during touch
 
     // ── Constants ──
     const GRID = 6;
     const TOTAL = GRID * GRID;      // 36
     const TRAY_PIECE_SIZE = 80;     // px
-    const TRAY_BG_FULL   = 480;    // 80 / tileSize * tileSize * 6 simplifies to 480 always
+    const TRAY_BG_FULL = 480;    // 80 / tileSize * tileSize * 6 simplifies to 480 always
 
     // ──────────────────────────────────────────────
     //  Fisher-Yates Shuffle (unbiased)
@@ -50,11 +48,11 @@
 
             const dz = document.createElement('div');
             dz.className = 'drop-zone';
-            dz.dataset.index   = idx;
+            dz.dataset.index = idx;
             dz.dataset.correct = idx;   // correct pieceValue for this cell
-            dz.style.left   = (col * tileSize) + 'px';
-            dz.style.top    = (row * tileSize) + 'px';
-            dz.style.width  = tileSize + 'px';
+            dz.style.left = (col * tileSize) + 'px';
+            dz.style.top = (row * tileSize) + 'px';
+            dz.style.width = tileSize + 'px';
             dz.style.height = tileSize + 'px';
 
             // dragover — allow drop + highlight
@@ -75,7 +73,7 @@
 
                 const pieceVal = parseInt(e.dataTransfer.getData('pieceValue'), 10);
                 const fromType = e.dataTransfer.getData('fromType');
-                const fromDz   = e.dataTransfer.getData('fromDzIndex');
+                const fromDz = e.dataTransfer.getData('fromDzIndex');
 
                 if (isNaN(pieceVal)) return;
 
@@ -93,6 +91,7 @@
         trayPieces = [];
         for (let i = 0; i < TOTAL; i++) trayPieces.push(i);
         shuffleArray(trayPieces);
+        console.log("Tray pieces:", trayPieces, "Length:", trayPieces.length);
         renderTray();
     }
 
@@ -114,12 +113,12 @@
         const row = Math.floor(val / GRID);
 
         const div = document.createElement('div');
-        div.className   = 'tray-piece';
-        div.draggable   = true;
+        div.className = 'tray-piece';
+        div.draggable = true;
         div.dataset.val = val;
 
         // background-size is always 800px for 80px tray pieces
-        div.style.backgroundSize     = TRAY_BG_FULL + 'px ' + TRAY_BG_FULL + 'px';
+        div.style.backgroundSize = TRAY_BG_FULL + 'px ' + TRAY_BG_FULL + 'px';
         div.style.backgroundPosition = -(col * TRAY_PIECE_SIZE) + 'px ' + -(row * TRAY_PIECE_SIZE) + 'px';
 
         div.addEventListener('dragstart', function (e) {
@@ -156,11 +155,11 @@
         const fullSize = tileSize * GRID;
 
         const div = document.createElement('div');
-        div.className   = 'board-piece';
-        div.draggable   = true;
+        div.className = 'board-piece';
+        div.draggable = true;
         div.dataset.val = val;
 
-        div.style.backgroundSize     = fullSize + 'px ' + fullSize + 'px';
+        div.style.backgroundSize = fullSize + 'px ' + fullSize + 'px';
         div.style.backgroundPosition = -(col * tileSize) + 'px ' + -(row * tileSize) + 'px';
 
         // board pieces are also draggable (move between drop zones)
@@ -199,7 +198,7 @@
     // ──────────────────────────────────────────────
     function handleDrop(dropZoneIndex, pieceVal, fromType, fromDzIndex) {
         const dropZones = boardEl.querySelectorAll('.drop-zone');
-        const targetDz  = dropZones[dropZoneIndex];
+        const targetDz = dropZones[dropZoneIndex];
 
         // ── If target drop zone already has a piece, return it to tray ──
         if (placedPieces.hasOwnProperty(dropZoneIndex)) {
@@ -229,7 +228,7 @@
         targetDz.appendChild(renderBoardPiece(pieceVal));
 
         // ── Re-render tray (may have gained or lost pieces) ──
-        renderTray();
+        setTimeout(renderTray, 0);
 
         // ── Check win ──
         checkWin();
@@ -249,17 +248,29 @@
         }
 
         // All 36 match!
-        winMsgEl.classList.remove('hidden');
+        playWinAnimation();
     }
 
     // ──────────────────────────────────────────────
-    //  Reset / Play Again
+    //  Win Animation
     // ──────────────────────────────────────────────
-    function resetGame() {
-        placedPieces = {};
-        winMsgEl.classList.add('hidden');
-        initBoard();
-        initTray();
+    function playWinAnimation() {
+        const dropZones = boardEl.querySelectorAll('.drop-zone');
+
+        dropZones.forEach(dz => dz.style.border = 'none');
+        boardEl.classList.add('board-pop');
+
+        setTimeout(() => {
+            boardEl.classList.remove('board-pop');
+            boardEl.classList.add('board-pop-return');
+        }, 300);
+
+        setTimeout(() => {
+            boardEl.classList.remove('board-pop-return');
+            boardEl.innerHTML = '<img src="./phoenix.jpg" style="width: 100%; height: 100%; object-fit: cover; border: none; display: block;">';
+            const congratsText = document.getElementById('congrats-text');
+            if (congratsText) congratsText.style.opacity = '1';
+        }, 600);
     }
 
     // ──────────────────────────────────────────────
@@ -268,7 +279,7 @@
     function handleResize() {
         // Save current state
         const savedPlaced = Object.assign({}, placedPieces);
-        const savedTray   = trayPieces.slice();
+        const savedTray = trayPieces.slice();
 
         // Recalculate tileSize and re-render board
         tileSize = boardEl.offsetWidth / GRID;
@@ -297,20 +308,20 @@
         }
         touchClone = sourceEl.cloneNode(true);
         touchClone.className = 'touch-clone';
-        
+
         // Match size and background
         touchClone.style.width = sourceEl.offsetWidth + 'px';
         touchClone.style.height = sourceEl.offsetHeight + 'px';
         touchClone.style.backgroundSize = sourceEl.style.backgroundSize;
         touchClone.style.backgroundPosition = sourceEl.style.backgroundPosition;
-        
+
         // Center the clone on the touch point
         touchClone.style.left = (x - sourceEl.offsetWidth / 2) + 'px';
         touchClone.style.top = (y - sourceEl.offsetHeight / 2) + 'px';
-        
+
         document.body.appendChild(touchClone);
         sourceEl.classList.add('dragging');
-        
+
         // Keep a reference to the original element to remove the class later
         touchClone._sourceEl = sourceEl;
     }
@@ -347,13 +358,13 @@
 
     document.addEventListener('touchend', function (e) {
         if (!touchClone) return;
-        
+
         if (currentHoverDz) {
             const dzIdx = parseInt(currentHoverDz.dataset.index, 10);
             const fromDz = dragSource.dzIndex !== undefined ? dragSource.dzIndex : null;
-            
+
             handleDrop(dzIdx, dragSource.val, dragSource.from, fromDz);
-            
+
             currentHoverDz.classList.remove('drag-over');
             currentHoverDz = null;
         }
@@ -361,7 +372,7 @@
         if (touchClone._sourceEl) {
             touchClone._sourceEl.classList.remove('dragging');
         }
-        
+
         touchClone.remove();
         touchClone = null;
         dragSource = null;
@@ -369,7 +380,7 @@
 
     document.addEventListener('touchcancel', function (e) {
         if (!touchClone) return;
-        
+
         if (currentHoverDz) {
             currentHoverDz.classList.remove('drag-over');
             currentHoverDz = null;
@@ -378,7 +389,7 @@
         if (touchClone._sourceEl) {
             touchClone._sourceEl.classList.remove('dragging');
         }
-        
+
         touchClone.remove();
         touchClone = null;
         dragSource = null;
@@ -387,7 +398,6 @@
     // ──────────────────────────────────────────────
     //  Boot
     // ──────────────────────────────────────────────
-    playAgainBtn.addEventListener('click', resetGame);
     window.addEventListener('resize', handleResize);
 
     // Start the game

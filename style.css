@@ -107,49 +107,15 @@ body {
     opacity: 0.4;
 }
 
-/* ── Win overlay ── */
-#win-msg {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 1000;
-    backdrop-filter: blur(6px);
-}
-
-#win-msg.hidden {
-    display: none;
-}
-
-#win-content {
+/* ── Congrats Text ── */
+#congrats-text {
+    color: white;
+    font-size: 1.4rem;
     text-align: center;
-}
-
-#win-text {
-    color: #fff;
-    font-size: 56px;
-    font-weight: 700;
-    margin-bottom: 28px;
-    text-shadow: 0 0 30px rgba(232, 124, 30, 0.6);
-}
-
-#play-again {
-    padding: 14px 40px;
-    font-size: 18px;
-    font-weight: 600;
-    color: #fff;
-    background: #e87c1e;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease;
-}
-
-#play-again:hover {
-    background: #d06a10;
-    transform: scale(1.05);
+    letter-spacing: 3px;
+    margin-top: 16px;
+    opacity: 0;
+    transition: opacity 800ms ease;
 }
 
 /* ── Scrollbar styling for tray ── */
@@ -189,4 +155,15 @@ body {
     opacity: 0.8;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     border-radius: 2px;
+}
+
+/* ── Win Animation ── */
+.board-pop {
+    transition: transform 0.3s ease-out;
+    transform: scale(1.08);
+}
+
+.board-pop-return {
+    transition: transform 0.3s ease-in;
+    transform: scale(1);
 }
