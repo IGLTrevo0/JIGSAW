@@ -17,6 +17,8 @@
     let trayPieces   = [];          // array of pieceValues currently in tray
     let placedPieces = {};          // { dropZoneIndex: pieceValue }
     let dragSource   = null;        // { from: 'tray'|'board', val: Number, dzIndex?: Number }
+    let touchClone   = null;        // visual clone for touch dragging
+    let currentHoverDz = null;      // currently hovered drop zone during touch
 
     // ── Constants ──
     const GRID = 6;
@@ -135,6 +137,13 @@
             dragSource = null;
         });
 
+        // Touch parallel
+        div.addEventListener('touchstart', function (e) {
+            const touch = e.changedTouches[0];
+            dragSource = { from: 'tray', val: val };
+            createTouchClone(this, touch.clientX, touch.clientY);
+        });
+
         return div;
     }
 
@@ -171,6 +180,15 @@
         div.addEventListener('dragend', function () {
             this.classList.remove('dragging');
             dragSource = null;
+        });
+
+        // Touch parallel
+        div.addEventListener('touchstart', function (e) {
+            const touch = e.changedTouches[0];
+            const parentDz = this.parentElement;
+            const dzIdx = parseInt(parentDz.dataset.index, 10);
+            dragSource = { from: 'board', val: val, dzIndex: dzIdx };
+            createTouchClone(this, touch.clientX, touch.clientY);
         });
 
         return div;
@@ -269,6 +287,102 @@
         trayPieces = savedTray;
         renderTray();
     }
+
+    // ──────────────────────────────────────────────
+    //  Touch Event Handling (Parallel to Drag & Drop)
+    // ──────────────────────────────────────────────
+    function createTouchClone(sourceEl, x, y) {
+        if (touchClone) {
+            touchClone.remove();
+        }
+        touchClone = sourceEl.cloneNode(true);
+        touchClone.className = 'touch-clone';
+        
+        // Match size and background
+        touchClone.style.width = sourceEl.offsetWidth + 'px';
+        touchClone.style.height = sourceEl.offsetHeight + 'px';
+        touchClone.style.backgroundSize = sourceEl.style.backgroundSize;
+        touchClone.style.backgroundPosition = sourceEl.style.backgroundPosition;
+        
+        // Center the clone on the touch point
+        touchClone.style.left = (x - sourceEl.offsetWidth / 2) + 'px';
+        touchClone.style.top = (y - sourceEl.offsetHeight / 2) + 'px';
+        
+        document.body.appendChild(touchClone);
+        sourceEl.classList.add('dragging');
+        
+        // Keep a reference to the original element to remove the class later
+        touchClone._sourceEl = sourceEl;
+    }
+
+    document.addEventListener('touchmove', function (e) {
+        if (!touchClone) return;
+
+        const touch = e.changedTouches[0];
+        const x = touch.clientX;
+        const y = touch.clientY;
+
+        touchClone.style.left = (x - touchClone.offsetWidth / 2) + 'px';
+        touchClone.style.top = (y - touchClone.offsetHeight / 2) + 'px';
+
+        // Find drop zone underneath
+        const elemUnder = document.elementFromPoint(x, y);
+        let dz = null;
+        if (elemUnder && elemUnder.classList.contains('drop-zone')) {
+            dz = elemUnder;
+        } else if (elemUnder && elemUnder.parentElement && elemUnder.parentElement.classList.contains('drop-zone')) {
+            dz = elemUnder.parentElement;
+        }
+
+        if (currentHoverDz !== dz) {
+            if (currentHoverDz) {
+                currentHoverDz.classList.remove('drag-over');
+            }
+            if (dz) {
+                dz.classList.add('drag-over');
+            }
+            currentHoverDz = dz;
+        }
+    }, { passive: false });
+
+    document.addEventListener('touchend', function (e) {
+        if (!touchClone) return;
+        
+        if (currentHoverDz) {
+            const dzIdx = parseInt(currentHoverDz.dataset.index, 10);
+            const fromDz = dragSource.dzIndex !== undefined ? dragSource.dzIndex : null;
+            
+            handleDrop(dzIdx, dragSource.val, dragSource.from, fromDz);
+            
+            currentHoverDz.classList.remove('drag-over');
+            currentHoverDz = null;
+        }
+
+        if (touchClone._sourceEl) {
+            touchClone._sourceEl.classList.remove('dragging');
+        }
+        
+        touchClone.remove();
+        touchClone = null;
+        dragSource = null;
+    });
+
+    document.addEventListener('touchcancel', function (e) {
+        if (!touchClone) return;
+        
+        if (currentHoverDz) {
+            currentHoverDz.classList.remove('drag-over');
+            currentHoverDz = null;
+        }
+
+        if (touchClone._sourceEl) {
+            touchClone._sourceEl.classList.remove('dragging');
+        }
+        
+        touchClone.remove();
+        touchClone = null;
+        dragSource = null;
+    });
 
     // ──────────────────────────────────────────────
     //  Boot

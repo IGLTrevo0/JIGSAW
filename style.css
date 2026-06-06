@@ -53,6 +53,7 @@ body {
     cursor: grab;
     border-radius: 2px;
     transition: box-shadow 0.15s ease, opacity 0.15s ease;
+    touch-action: none;
 }
 
 .tray-piece:hover {
@@ -99,6 +100,7 @@ body {
     background-image: url('./phoenix.jpg');
     background-repeat: no-repeat;
     cursor: grab;
+    touch-action: none;
 }
 
 .board-piece.dragging {
@@ -177,4 +179,14 @@ body {
         width: 60vmin;
         height: 60vmin;
     }
+}
+
+/* ── Touch Clone ── */
+.touch-clone {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.8;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border-radius: 2px;
 }
