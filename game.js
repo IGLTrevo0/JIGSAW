@@ -242,8 +242,12 @@
     //  Win detection
     // ──────────────────────────────────────────────
     function checkWin() {
-        const allPlaced = Object.keys(placedPieces).length === TOTAL;
-        if (!allPlaced) return;
+        // Only win if all pieces are placed and in their correct position
+        for (let idx = 0; idx < TOTAL; idx++) {
+            if (placedPieces[idx] !== idx) {
+                return;
+            }
+        }
         playWinAnimation();
     }
 
